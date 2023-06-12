@@ -1,0 +1,55 @@
+:root {
+  --primary: #4687ff;
+  --secondary: #3137fd;
+  --tertiary: #7df9ff;
+}
+
+#root {
+  display: flex;
+  align-items: center;
+  height: 100vh;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  background-color: inherit;
+  color: inherit;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background-color: var(--primary);
+}
+
+.grid {
+  border: 5px var(--secondary) solid;
+  aspect-ratio: 1/1;
+  height: 750px;
+  margin: auto;
+}
+
+.square {
+  display: inline-block;
+  aspect-ratio: 1/1;
+  width: 50px;
+  text-align: center;
+  line-height: 50px;
+  margin: 0;
+}
+
+.square:not(.square:nth-child(1)) {
+  margin-top: calc(-1*1rem*0.25);
+}
+
+.hidden {
+  color: rgba(0, 0, 0, 0);
+}
+
+.square:nth-child(2n+1) {
+  background-color: rgba(49,55, 253, 0.3);
+}
+
+.square:nth-child(2n) {
+  background-color: rgba(125, 249, 255, 0.2);
+}
