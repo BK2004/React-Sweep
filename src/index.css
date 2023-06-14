@@ -1,7 +1,7 @@
 :root {
-  --primary: #4687ff;
-  --secondary: #3137fd;
-  --tertiary: #7df9ff;
+  --primary: #ff4646;
+  --secondary: #fd3131;
+  --tertiary: #ff7d7d;
 }
 
 #root {
@@ -22,15 +22,25 @@ body {
   background-color: var(--primary);
 }
 
+.grey-out {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
 .grid {
-  border: 5px var(--secondary) solid;
   aspect-ratio: 1/1;
   height: 750px;
   margin: auto;
+  z-index: 10000;
 }
 
 .square {
   display: inline-block;
+  white-space: nowrap;
   aspect-ratio: 1/1;
   width: 50px;
   text-align: center;
@@ -38,7 +48,7 @@ body {
   margin: 0;
 }
 
-.square:not(.square:nth-child(1)) {
+.square:not(.square:nth-child(1))[data-value=""] {
   margin-top: calc(-1*1rem*0.25);
 }
 
@@ -47,9 +57,9 @@ body {
 }
 
 .square:nth-child(2n+1) {
-  background-color: rgba(49,55, 253, 0.3);
+  background-color: rgb(253, 49, 49);
 }
 
 .square:nth-child(2n) {
-  background-color: rgba(125, 249, 255, 0.2);
+  background-color: rgb(255, 125, 125);
 }

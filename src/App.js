@@ -1,16 +1,22 @@
 import logo from './logo.svg';
 import './App.css';
 
+const GRID_SIZE = 15;
+
 function App() {
   return (
-    <Grid />
+    <>
+      <Grid />
+      <Darken />
+    </>
   );
 }
 
-let vals = [];
-for (let i = 0; i < 225; i++) {
-  vals.push("");
+function Darken() {
+  return <div className="grey-out">s</div>
 }
+
+let vals = Array(GRID_SIZE**2).fill("");
 
 function Grid() {
   return (
@@ -24,7 +30,7 @@ function Grid() {
 
 function Square({ value, hidden }) {
   return (
-    <div className={"square" + (hidden === "true" ? " hidden" : "")}>{value}</div>
+    <div className={"square" + (hidden === "true" ? " hidden" : "")} data-value={value}>{value}</div>
   )
 }
 
