@@ -2,6 +2,10 @@
   --primary: #ff4646;
   --secondary: #fd3131;
   --tertiary: #ff7d7d;
+  --grid-width: 15;
+  --grid-height: 15;
+  --grid-screen-width: 795px;
+  --grid-screen-height: 795px;
 }
 
 #root {
@@ -32,27 +36,23 @@ body {
 }
 
 .grid {
-  aspect-ratio: 1/1;
-  height: 750px;
+  display: grid;
+  column-count: var(--grid-width);
+  grid-template-columns: repeat(var(--grid-width), calc(var(--grid-screen-width)/var(--grid-width)));
+  grid-template-rows: repeat(var(--grid-height), calc(var(--grid-screen-height)/var(--grid-height)));
+  height: var(--grid-screen-height);
+  width: var(--grid-screen-width);
   margin: auto;
   z-index: 10000;
 }
 
 .square {
-  display: inline-block;
-  white-space: nowrap;
-  aspect-ratio: 1/1;
-  width: 50px;
   text-align: center;
-  line-height: 50px;
-  margin: 0;
+  line-height: calc(var(--grid-screen-height)/var(--grid-height));
+  border: none;
 }
 
-.square:not(.square:nth-child(1))[data-value=""] {
-  margin-top: calc(-1*1rem*0.25);
-}
-
-.hidden {
+.square[data-hidden="true"] {
   color: rgba(0, 0, 0, 0);
 }
 
