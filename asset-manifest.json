@@ -1,16 +1,17 @@
 {
   "files": {
-    "main.css": "/React-Sweep/static/css/main.96095f74.css",
-    "main.js": "/React-Sweep/static/js/main.ba7e8f74.js",
+    "main.css": "/React-Sweep/static/css/main.ac26d4f2.css",
+    "main.js": "/React-Sweep/static/js/main.3f932363.js",
     "static/js/787.a8936ea4.chunk.js": "/React-Sweep/static/js/787.a8936ea4.chunk.js",
+    "static/media/flag.svg": "/React-Sweep/static/media/flag.fd366ca92c1f559a3ec9.svg",
     "static/media/bomb.svg": "/React-Sweep/static/media/bomb.d1f9344e34c308a5c3c3.svg",
     "index.html": "/React-Sweep/index.html",
-    "main.96095f74.css.map": "/React-Sweep/static/css/main.96095f74.css.map",
-    "main.ba7e8f74.js.map": "/React-Sweep/static/js/main.ba7e8f74.js.map",
+    "main.ac26d4f2.css.map": "/React-Sweep/static/css/main.ac26d4f2.css.map",
+    "main.3f932363.js.map": "/React-Sweep/static/js/main.3f932363.js.map",
     "787.a8936ea4.chunk.js.map": "/React-Sweep/static/js/787.a8936ea4.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.96095f74.css",
-    "static/js/main.ba7e8f74.js"
+    "static/css/main.ac26d4f2.css",
+    "static/js/main.3f932363.js"
   ]
 }
