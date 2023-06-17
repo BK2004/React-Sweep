@@ -26,6 +26,16 @@ body {
   background-color: var(--primary);
 }
 
+.play-button {
+  border: none;
+  background-color: #aaa;
+  padding: 1rem 4rem;
+  font-size: 1.5rem;
+  color: white;
+  font-weight: bold;
+  margin: auto;
+}
+
 .grey-out {
   background-color: rgba(0, 0, 0, 0.5);
   position: absolute;
@@ -51,6 +61,8 @@ body {
   text-align: center;
   line-height: calc(var(--grid-screen-height)/var(--grid-height));
   border: none;
+  font-weight:bolder;
+  font-size: 2rem;
 }
 
 .square[data-hidden="true"] {
@@ -68,4 +80,39 @@ body {
 
 .square:nth-child(2n) {
   opacity: 0.8;
+}
+
+.square[data-value="1"] {
+  color: rgb(0, 222, 0);
+}
+
+.square[data-value="2"] {
+  color: rgb(222, 222, 0);
+}
+
+.square[data-value="3"] {
+  color: rgb(222, 122, 0);
+}
+
+.square[data-value="4"] {
+  color: rgb(222, 0, 0);
+}
+
+.square[data-value="5"] {
+  color: rgb(222, 0, 150);
+}
+
+.square[data-value="6"] {
+  color: rgb(222, 0, 255);
+}
+
+.square[data-value="7"] {
+  color: rgb(222, 122, 222);
+}
+
+.square[data-value="B"] {
+  background-image: url("./images/bomb.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: calc(var(--grid-screen-width)/var(--grid-width)*0.8) calc(var(--grid-screen-height)/var(--grid-height)*0.8);
 }

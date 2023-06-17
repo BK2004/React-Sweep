@@ -2,7 +2,8 @@ import { useState } from 'react';
 
 const SQUARE_TYPES = {
   Empty: 0,
-  Bomb: 1
+  Bomb: 1,
+  Uninitialized: 2
 }
 
 const GRID_WIDTH = 15;
@@ -11,12 +12,12 @@ const GRID_HEIGHT = 15;
 let squares = []
 
 function App() {
-  GenerateGrid(GRID_WIDTH, GRID_HEIGHT);
+  const [screen, setScreen] = useState(0);
 
   return (
     <>
-      <Grid />
-      <Darken />
+      { screen === 0 ? <Menu toGridScreen={() => { setScreen(1); squares = Array(GRID_HEIGHT * GRID_WIDTH).fill(SQUARE_TYPES.Uninitialized); }} /> : <Grid backToMenu={() => { setScreen(0); }} /> }
+      { screen === 1 && <Darken /> }
     </>
   );
 }
@@ -25,7 +26,15 @@ function Darken() {
   return <div className="grey-out"></div>
 }
 
-function Grid() {
+function Menu({ toGridScreen }) {
+  return (
+    <>
+      <button className="play-button" onClick={toGridScreen}>Play</button>
+    </>
+  )
+}
+
+function Grid({ backToMenu }) {
   const [squareVals, setSquareVals] = useState(Array(GRID_WIDTH * GRID_HEIGHT).fill(""));
   const [hidden, setHidden] = useState(Array(GRID_HEIGHT * GRID_WIDTH).fill(true));
   const [flagged, setFlagged] = useState(Array(GRID_HEIGHT * GRID_WIDTH).fill(false));
@@ -33,7 +42,17 @@ function Grid() {
 
   // Left click interaction (Reveal tiles)
   function handleLeftClick(index) {
-    if (!gameActive || !hidden[index] || flagged[index]) { return; }
+    // Send back to menu if game finished
+    if (!gameActive) {
+      backToMenu();
+    }
+
+    if (!hidden[index] || flagged[index]) { return; }
+
+    // Initialize grid
+    if (squares[index] === SQUARE_TYPES.Uninitialized) {
+      GenerateGrid(GRID_WIDTH, GRID_HEIGHT, index);
+    }
 
     let count = 0;
     // Check if tile is a bomb
@@ -57,6 +76,24 @@ function Grid() {
     hiddenCopy[index] = false;
     setSquareVals(valCopy);
     setHidden(hiddenCopy);
+
+    if (count === "B") {
+      // Slowly reveal all bombs
+      let bCount = 0;
+      for (let i = 0; i < GRID_HEIGHT * GRID_WIDTH; i++) {
+        if (squares[i] === SQUARE_TYPES.Bomb) {
+          bCount++;
+
+          setTimeout(() => {
+            const sqr = document.querySelector(`.square[data-index="${i}"]`);
+            if (sqr === null) { return; }
+
+            sqr.dataset.hidden="false";
+            sqr.dataset.value="B";
+          }, 40 * bCount)
+        }
+      }
+    }
   }
 
   // Right click interaction (adds and removes flag)
@@ -75,27 +112,31 @@ function Grid() {
   return (
     <div className="grid">
       {squareVals.map((val, i) => {
-        return <Square key={i} value={val} hidden={hidden[i]} onclick={() => {return handleLeftClick(i)}} onrightclick={(e) => {e.preventDefault(); return handleRightClick(i)}} />;
+        return <Square key={i} squareIndex={i} value={val} hidden={hidden[i]} onclick={() => {return handleLeftClick(i)}} onrightclick={(e) => {e.preventDefault(); return handleRightClick(i)}} />;
       })}
     </div>
   )
 }
 
-function Square({ value, hidden, onclick, onrightclick }) {
+function Square({ squareIndex, value, hidden, onclick, onrightclick }) {
   return (
-    <button className="square" data-value={value} data-hidden={hidden} onClick={onclick} onContextMenu={onrightclick}>{value}</button>
+    <button className="square" data-index={squareIndex} data-value={value} data-hidden={hidden} onClick={onclick} onContextMenu={onrightclick}>{value !== "B" ? value : ""}</button>
   )
 }
 
-function GenerateGrid(width, height) {
-  squares = Array(width * height).fill(SQUARE_TYPES.Empty);
+function GenerateGrid(width, height, startingSquareIndex) {
+  squares[startingSquareIndex] = SQUARE_TYPES.Empty;
   for (let i = 0; i <= Math.floor(width * height * 0.2); i++) {
     let r;
     do {
       r = Math.floor(Math.random() * width * height);
-    } while (squares[r] === SQUARE_TYPES.Bomb)
+    } while (squares[r] === SQUARE_TYPES.Bomb || squares[r] === SQUARE_TYPES.Empty)
 
     squares[r] = SQUARE_TYPES.Bomb;
+  }
+
+  for (let i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+    if (squares[i] === SQUARE_TYPES.Uninitialized) { squares[i] = SQUARE_TYPES.Empty; }
   }
 }
 
