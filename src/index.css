@@ -44,6 +44,7 @@ body {
   width: var(--grid-screen-width);
   margin: auto;
   z-index: 10000;
+  background-color: #fff;
 }
 
 .square {
@@ -54,12 +55,17 @@ body {
 
 .square[data-hidden="true"] {
   color: rgba(0, 0, 0, 0);
+  background-color: rgb(205, 0, 0);
+}
+
+.square[data-hidden="false"] {
+  background-color: rgb(122, 122, 122);
 }
 
 .square:nth-child(2n+1) {
-  background-color: rgb(253, 49, 49);
+  opacity: 1;
 }
 
 .square:nth-child(2n) {
-  background-color: rgb(255, 125, 125);
+  opacity: 0.8;
 }

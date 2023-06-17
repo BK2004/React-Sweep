@@ -22,47 +22,68 @@ function App() {
 }
 
 function Darken() {
-  return <div className="grey-out">s</div>
+  return <div className="grey-out"></div>
 }
 
 function Grid() {
   const [squareVals, setSquareVals] = useState(Array(GRID_WIDTH * GRID_HEIGHT).fill(""));
   const [hidden, setHidden] = useState(Array(GRID_HEIGHT * GRID_WIDTH).fill(true));
   const [flagged, setFlagged] = useState(Array(GRID_HEIGHT * GRID_WIDTH).fill(false));
+  const [gameActive, setGameActive] = useState(true);
 
+  // Left click interaction (Reveal tiles)
   function handleLeftClick(index) {
-    if (!hidden[index] || flagged[index]) { return; }
+    if (!gameActive || !hidden[index] || flagged[index]) { return; }
 
-    // Count adjacent bombs
     let count = 0;
-    let pos = GetCoords(index);
-    for (let x = -1; x <= 1; x++) {
-      for (let y = -1; y <= 1; y++) {
-        let sqIndex = GetSquareIndex(pos.x + x, pos.y + y);
-        if (!(x == 0 && y == 0) && sqIndex !== null && squares[sqIndex] == SQUARE_TYPES.Bomb) { count += 1; }
+    // Check if tile is a bomb
+    if (squares[index] === SQUARE_TYPES.Bomb) {
+      count = "B";
+      setGameActive(false);
+    } else {
+      // Count adjacent bombs
+      let pos = GetCoords(index);
+      for (let x = -1; x <= 1; x++) {
+        for (let y = -1; y <= 1; y++) {
+          let sqIndex = GetSquareIndex(pos.x + x, pos.y + y);
+          if (!(x === 0 && y === 0) && sqIndex !== null && squares[sqIndex] === SQUARE_TYPES.Bomb) { count += 1; }
+        }
       }
     }
 
     let valCopy = squareVals.slice();
     let hiddenCopy = hidden.slice();
-    valCopy[index] = (count > 0 ? count : "");
+    valCopy[index] = (count > 0 || count === "B" ? count : "");
     hiddenCopy[index] = false;
     setSquareVals(valCopy);
     setHidden(hiddenCopy);
   }
 
+  // Right click interaction (adds and removes flag)
+  function handleRightClick(index) {
+    if (!gameActive || !hidden[index]) { return; }
+
+    let flagCopy = flagged.slice();
+    flagCopy[index] = !flagCopy[index];
+    setFlagged(flagCopy);
+
+    return null;
+  }
+
+  SetDisplayVariables();
+
   return (
     <div className="grid">
       {squareVals.map((val, i) => {
-        return <Square key={i} value={val} hidden={hidden[i]} onclick={() => {return handleLeftClick(i)}} st={squares[i]} />;
+        return <Square key={i} value={val} hidden={hidden[i]} onclick={() => {return handleLeftClick(i)}} onrightclick={(e) => {e.preventDefault(); return handleRightClick(i)}} />;
       })}
     </div>
   )
 }
 
-function Square({ value, hidden, onclick, st }) {
+function Square({ value, hidden, onclick, onrightclick }) {
   return (
-    <button className="square" data-value={value} data-hidden={hidden} onClick={onclick} data-st={st}>{value}</button>
+    <button className="square" data-value={value} data-hidden={hidden} onClick={onclick} onContextMenu={onrightclick}>{value}</button>
   )
 }
 
@@ -88,6 +109,13 @@ function GetCoords(index) {
     y: Math.floor(index/GRID_WIDTH),
     x: index % GRID_WIDTH
   }
+}
+
+function SetDisplayVariables() {
+  const root = document.querySelector(":root");
+
+  root.style.setProperty("--grid-width", GRID_WIDTH);
+  root.style.setProperty("--grid-height", GRID_HEIGHT);
 }
 
 export default App;
