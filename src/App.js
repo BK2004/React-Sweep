@@ -146,6 +146,7 @@ function Square({ squareIndex, value, hidden, onclick, onrightclick }) {
   )
 }
 
+// Recursively reveals adjacent tiles to an empty space and all adjacent empty spaces
 function RecursiveReveal(hiddenArr, valArr, x, y) {
   if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) {
     return 0;
@@ -177,6 +178,7 @@ function RecursiveReveal(hiddenArr, valArr, x, y) {
   return revealed;
 }
 
+// Counts bombs nearby
 function CountAdjacent(index) {
   let count = 0;
   let pos = GetCoords(index);
@@ -190,6 +192,7 @@ function CountAdjacent(index) {
   return count;
 }
 
+// Generates the grid for each game, filling in specified bombCount and empties.
 function GenerateGrid(width, height, startingSquareIndex, bombCount) {
   const pos = GetCoords(startingSquareIndex);
   squares[startingSquareIndex] = SQUARE_TYPES.Empty;
@@ -230,11 +233,13 @@ function GenerateGrid(width, height, startingSquareIndex, bombCount) {
 
 }
 
+// Get index from coordinate points
 function GetSquareIndex(x, y) {
   if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) { return null }
   return y * GRID_WIDTH + x;
 }
 
+// Get coordinate points from index
 function GetCoords(index) {
   return {
     y: Math.floor(index/GRID_WIDTH),
@@ -242,6 +247,7 @@ function GetCoords(index) {
   }
 }
 
+// Calculate new CSS display variables based on device and GRID presets
 function SetDisplayVariables() {
   const root = document.querySelector(":root");
 
