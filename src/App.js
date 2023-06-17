@@ -153,7 +153,7 @@ function RecursiveReveal(hiddenArr, valArr, x, y) {
 
   const index = GetSquareIndex(x, y);
 
-  if (hiddenArr[index] === false) { return 0; }
+  if (hiddenArr[index] === false || valArr[index] === "F") { return 0; }
   const c = CountAdjacent(index);
   if (c !== 0) {
     hiddenArr[index] = false;
