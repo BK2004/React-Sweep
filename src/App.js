@@ -6,8 +6,8 @@ const SQUARE_TYPES = {
   Uninitialized: 2
 }
 
-const GRID_WIDTH = 15;
-const GRID_HEIGHT = 15;
+const GRID_WIDTH = 7;
+const GRID_HEIGHT = 7;
 
 let squares = []
 
@@ -16,7 +16,7 @@ function App() {
 
   return (
     <>
-      { screen === 0 ? <Menu toGridScreen={() => { setScreen(1); squares = Array(GRID_HEIGHT * GRID_WIDTH).fill(SQUARE_TYPES.Uninitialized); }} /> : <Grid backToMenu={() => { setScreen(0); }} /> }
+      { screen === 0 ? <Menu toGridScreen={() => { setScreen(1); squares = Array(GRID_HEIGHT * GRID_WIDTH).fill(SQUARE_TYPES.Uninitialized); }} /> : <Grid backToMenu={() => { setScreen(0); }} bombCount={Math.floor(GRID_HEIGHT * GRID_WIDTH * 0.125)} /> }
       { screen === 1 && <Darken /> }
     </>
   );
@@ -34,11 +34,21 @@ function Menu({ toGridScreen }) {
   )
 }
 
-function Grid({ backToMenu }) {
+function Grid({ backToMenu, bombCount }) {
   const [squareVals, setSquareVals] = useState(Array(GRID_WIDTH * GRID_HEIGHT).fill(""));
   const [hidden, setHidden] = useState(Array(GRID_HEIGHT * GRID_WIDTH).fill(true));
-  const [flagged, setFlagged] = useState(Array(GRID_HEIGHT * GRID_WIDTH).fill(false));
   const [gameActive, setGameActive] = useState(true);
+  const [numRevealed, setNumRevealed] = useState(0);
+
+  checkAllRevealed();
+
+  // Check if all tiles have been revealed
+  function checkAllRevealed() {
+    if (gameActive && numRevealed === (GRID_WIDTH * GRID_HEIGHT) - bombCount) {
+      // all has been revealed, end game
+      setGameActive(false);
+    }
+  }
 
   // Left click interaction (Reveal tiles)
   function handleLeftClick(index) {
@@ -47,11 +57,11 @@ function Grid({ backToMenu }) {
       backToMenu();
     }
 
-    if (!hidden[index] || flagged[index]) { return; }
+    if (!hidden[index] || squareVals[index] === "F") { return; }
 
     // Initialize grid
     if (squares[index] === SQUARE_TYPES.Uninitialized) {
-      GenerateGrid(GRID_WIDTH, GRID_HEIGHT, index);
+      GenerateGrid(GRID_WIDTH, GRID_HEIGHT, index, bombCount);
     }
 
     let count = 0;
@@ -61,12 +71,20 @@ function Grid({ backToMenu }) {
       setGameActive(false);
     } else {
       // Count adjacent bombs
-      let pos = GetCoords(index);
-      for (let x = -1; x <= 1; x++) {
-        for (let y = -1; y <= 1; y++) {
-          let sqIndex = GetSquareIndex(pos.x + x, pos.y + y);
-          if (!(x === 0 && y === 0) && sqIndex !== null && squares[sqIndex] === SQUARE_TYPES.Bomb) { count += 1; }
-        }
+      count = CountAdjacent(index);
+
+      // Recursively reveal all empty elements and their adjacent tiles
+      if (count === 0) {
+        let valsC = squareVals.slice();
+        let hiddenC = hidden.slice();
+        let pos = GetCoords(index);
+        let newReveals = RecursiveReveal(hiddenC, valsC, pos.x, pos.y);
+
+        setNumRevealed(numRevealed + newReveals);
+        setSquareVals(valsC);
+        setHidden(hiddenC);
+
+        return;
       }
     }
 
@@ -76,20 +94,24 @@ function Grid({ backToMenu }) {
     hiddenCopy[index] = false;
     setSquareVals(valCopy);
     setHidden(hiddenCopy);
+    setNumRevealed(numRevealed + 1);
 
     if (count === "B") {
       // Slowly reveal all bombs
       let bCount = 0;
+      const g = document.querySelector('.grid');
       for (let i = 0; i < GRID_HEIGHT * GRID_WIDTH; i++) {
         if (squares[i] === SQUARE_TYPES.Bomb) {
           bCount++;
 
           setTimeout(() => {
-            const sqr = document.querySelector(`.square[data-index="${i}"]`);
+            if (g.parentElement === null) { return; }
+            const sqr = g.querySelector(`.square[data-index="${i}"]`);
             if (sqr === null) { return; }
 
-            sqr.dataset.hidden="false";
-            sqr.dataset.value="B";
+            sqr.dataset.hidden = "false";
+            sqr.dataset.value = "B";
+            sqr.innerHTML = "";
           }, 40 * bCount)
         }
       }
@@ -100,9 +122,9 @@ function Grid({ backToMenu }) {
   function handleRightClick(index) {
     if (!gameActive || !hidden[index]) { return; }
 
-    let flagCopy = flagged.slice();
-    flagCopy[index] = !flagCopy[index];
-    setFlagged(flagCopy);
+    let valCopy = squareVals.slice();
+    valCopy[index] = valCopy[index] === "F" ? "" : "F";
+    setSquareVals(valCopy);
 
     return null;
   }
@@ -124,9 +146,76 @@ function Square({ squareIndex, value, hidden, onclick, onrightclick }) {
   )
 }
 
-function GenerateGrid(width, height, startingSquareIndex) {
+function RecursiveReveal(hiddenArr, valArr, x, y) {
+  if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) {
+    return 0;
+  }
+
+  const index = GetSquareIndex(x, y);
+
+  if (hiddenArr[index] === false) { return 0; }
+  const c = CountAdjacent(index);
+  if (c !== 0) {
+    hiddenArr[index] = false;
+    valArr[index] = c;
+
+    return 1;
+  }
+
+  hiddenArr[index] = false;
+  valArr[index] = "";
+  let revealed = 1;
+
+  for (let i = x - 1; i <= x + 1; i++) {
+    for (let j = y - 1; j <= y + 1; j++) {
+      if (!(i === 0 & j === 0)) {
+        revealed += RecursiveReveal(hiddenArr, valArr, i, j);
+      }
+    }
+  }
+
+  return revealed;
+}
+
+function CountAdjacent(index) {
+  let count = 0;
+  let pos = GetCoords(index);
+  for (let x = -1; x <= 1; x++) {
+    for (let y = -1; y <= 1; y++) {
+      let sqIndex = GetSquareIndex(pos.x + x, pos.y + y);
+      if (!(x === 0 && y === 0) && sqIndex !== null && squares[sqIndex] === SQUARE_TYPES.Bomb) { count += 1; }
+    }
+  }
+
+  return count;
+}
+
+function GenerateGrid(width, height, startingSquareIndex, bombCount) {
+  const pos = GetCoords(startingSquareIndex);
   squares[startingSquareIndex] = SQUARE_TYPES.Empty;
-  for (let i = 0; i <= Math.floor(width * height * 0.2); i++) {
+
+  // Fill adjacent squares with 'Empty'
+  const i1 = GetSquareIndex(pos.x + 1, pos.y);
+  if (i1 !== null) {
+    squares[i1] = SQUARE_TYPES.Empty;
+  }
+
+  const i2 = GetSquareIndex(pos.x - 1, pos.y);
+  if (i2 !== null) {
+    squares[i2] = SQUARE_TYPES.Empty;
+  }
+
+  const i3 = GetSquareIndex(pos.x, pos.y + 1);
+  if (i3 !== null) {
+    squares[i3] = SQUARE_TYPES.Empty;
+  }
+
+  const i4 = GetSquareIndex(pos.x, pos.y - 1);
+  if (i4 !== null) {
+    squares[i4] = SQUARE_TYPES.Empty;
+  }
+  
+  for (let i = 0; i < bombCount; i++) {
     let r;
     do {
       r = Math.floor(Math.random() * width * height);
@@ -138,6 +227,7 @@ function GenerateGrid(width, height, startingSquareIndex) {
   for (let i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
     if (squares[i] === SQUARE_TYPES.Uninitialized) { squares[i] = SQUARE_TYPES.Empty; }
   }
+
 }
 
 function GetSquareIndex(x, y) {

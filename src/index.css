@@ -116,3 +116,10 @@ body {
   background-repeat: no-repeat;
   background-size: calc(var(--grid-screen-width)/var(--grid-width)*0.8) calc(var(--grid-screen-height)/var(--grid-height)*0.8);
 }
+
+.square[data-value="F"] {
+  background-image: url("./images/flag.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: calc(var(--grid-screen-width)/var(--grid-width)*0.8) calc(var(--grid-screen-height)/var(--grid-height)*0.8);
+}
