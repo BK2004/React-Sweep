@@ -195,29 +195,16 @@ function CountAdjacent(index) {
 // Generates the grid for each game, filling in specified bombCount and empties.
 function GenerateGrid(width, height, startingSquareIndex, bombCount) {
   const pos = GetCoords(startingSquareIndex);
-  squares[startingSquareIndex] = SQUARE_TYPES.Empty;
 
   // Fill adjacent squares with 'Empty'
-  const i1 = GetSquareIndex(pos.x + 1, pos.y);
-  if (i1 !== null) {
-    squares[i1] = SQUARE_TYPES.Empty;
+  for (let i = pos.x - 1; i <= pos.x + 1; i++) {
+    for (let j = pos.y - 1; j <= pos.y + 1; j++) {
+      const ind = GetSquareIndex(i, j);
+      if (ind !== null) {
+        squares[ind] = SQUARE_TYPES.Empty;
+      }
+    }
   }
-
-  const i2 = GetSquareIndex(pos.x - 1, pos.y);
-  if (i2 !== null) {
-    squares[i2] = SQUARE_TYPES.Empty;
-  }
-
-  const i3 = GetSquareIndex(pos.x, pos.y + 1);
-  if (i3 !== null) {
-    squares[i3] = SQUARE_TYPES.Empty;
-  }
-
-  const i4 = GetSquareIndex(pos.x, pos.y - 1);
-  if (i4 !== null) {
-    squares[i4] = SQUARE_TYPES.Empty;
-  }
-  
   for (let i = 0; i < bombCount; i++) {
     let r;
     do {
