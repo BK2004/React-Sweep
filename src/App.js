@@ -6,17 +6,19 @@ const SQUARE_TYPES = {
   Uninitialized: 2
 }
 
-const GRID_WIDTH = 7;
-const GRID_HEIGHT = 7;
+const EASY_PRESET = 9;
+const MEDIUM_PRESET = 15;
+const HARD_PRESET = 23;
 
 let squares = []
 
 function App() {
   const [screen, setScreen] = useState(0);
+  const [tileCount, setTileCount] = useState(MEDIUM_PRESET);
 
   return (
     <>
-      { screen === 0 ? <Menu toGridScreen={() => { setScreen(1); squares = Array(GRID_HEIGHT * GRID_WIDTH).fill(SQUARE_TYPES.Uninitialized); }} /> : <Grid backToMenu={() => { setScreen(0); }} bombCount={Math.floor(GRID_HEIGHT * GRID_WIDTH * 0.125)} /> }
+      { screen === 0 ? <Menu tileCount={tileCount} setTileCount={setTileCount} toGridScreen={() => { setScreen(1); squares = Array(tileCount ** 2).fill(SQUARE_TYPES.Uninitialized); }} /> : <Grid backToMenu={() => { setScreen(0); }} bombCount={Math.floor(tileCount ** 2 * (tileCount/HARD_PRESET*0.2)) - 1} tileCount={tileCount ** 2} /> }
       { screen === 1 && <Darken /> }
     </>
   );
@@ -26,17 +28,30 @@ function Darken() {
   return <div className="grey-out"></div>
 }
 
-function Menu({ toGridScreen }) {
+function Menu({ toGridScreen, tileCount, setTileCount }) {
   return (
     <>
       <button className="play-button" onClick={toGridScreen}>Play</button>
+      <div className="tile-setter">
+        <div className="preset-container">
+          <button className="slider-preset" onClick={() => setTileCount(EASY_PRESET)}>Easy</button>
+          <button className="slider-preset" onClick={() => setTileCount(MEDIUM_PRESET)}>Medium</button>
+          <button className="slider-preset" onClick={() => setTileCount(HARD_PRESET)}>Hard</button>
+        </div>
+        <div className="slider-wrap">
+          <input className="tile-slider" type="range" min="7" max="27" step="2" value={tileCount} onChange={(e) => {
+            setTileCount(e.target.value);
+          }}></input>
+          <p className="slider-label">{"Grid Size: " + tileCount**2 + ` (${tileCount}x${tileCount})`}</p>
+        </div>
+      </div>
     </>
   )
 }
 
-function Grid({ backToMenu, bombCount }) {
-  const [squareVals, setSquareVals] = useState(Array(GRID_WIDTH * GRID_HEIGHT).fill(""));
-  const [hidden, setHidden] = useState(Array(GRID_HEIGHT * GRID_WIDTH).fill(true));
+function Grid({ backToMenu, bombCount, tileCount }) {
+  const [squareVals, setSquareVals] = useState(Array(tileCount).fill(""));
+  const [hidden, setHidden] = useState(Array(tileCount).fill(true));
   const [gameActive, setGameActive] = useState(true);
   const [numRevealed, setNumRevealed] = useState(0);
 
@@ -44,7 +59,7 @@ function Grid({ backToMenu, bombCount }) {
 
   // Check if all tiles have been revealed
   function checkAllRevealed() {
-    if (gameActive && numRevealed === (GRID_WIDTH * GRID_HEIGHT) - bombCount) {
+    if (gameActive && numRevealed === (tileCount) - bombCount) {
       // all has been revealed, end game
       setGameActive(false);
     }
@@ -61,7 +76,7 @@ function Grid({ backToMenu, bombCount }) {
 
     // Initialize grid
     if (squares[index] === SQUARE_TYPES.Uninitialized) {
-      GenerateGrid(GRID_WIDTH, GRID_HEIGHT, index, bombCount);
+      GenerateGrid(Math.sqrt(tileCount), Math.sqrt(tileCount), index, bombCount);
     }
 
     let count = 0;
@@ -100,7 +115,7 @@ function Grid({ backToMenu, bombCount }) {
       // Slowly reveal all bombs
       let bCount = 0;
       const g = document.querySelector('.grid');
-      for (let i = 0; i < GRID_HEIGHT * GRID_WIDTH; i++) {
+      for (let i = 0; i < tileCount; i++) {
         if (squares[i] === SQUARE_TYPES.Bomb) {
           bCount++;
 
@@ -148,7 +163,7 @@ function Square({ squareIndex, value, hidden, onclick, onrightclick }) {
 
 // Recursively reveals adjacent tiles to an empty space and all adjacent empty spaces
 function RecursiveReveal(hiddenArr, valArr, x, y) {
-  if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) {
+  if (x < 0 || y < 0 || x >= Math.sqrt(hiddenArr.length) || y >= Math.sqrt(hiddenArr.length)) {
     return 0;
   }
 
@@ -205,6 +220,8 @@ function GenerateGrid(width, height, startingSquareIndex, bombCount) {
       }
     }
   }
+
+  // Populate with bombs
   for (let i = 0; i < bombCount; i++) {
     let r;
     do {
@@ -214,7 +231,8 @@ function GenerateGrid(width, height, startingSquareIndex, bombCount) {
     squares[r] = SQUARE_TYPES.Bomb;
   }
 
-  for (let i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+  // Set all unchanged tiles to SQUARE_TYPES.Empty
+  for (let i = 0; i < squares.length; i++) {
     if (squares[i] === SQUARE_TYPES.Uninitialized) { squares[i] = SQUARE_TYPES.Empty; }
   }
 
@@ -222,15 +240,15 @@ function GenerateGrid(width, height, startingSquareIndex, bombCount) {
 
 // Get index from coordinate points
 function GetSquareIndex(x, y) {
-  if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) { return null }
-  return y * GRID_WIDTH + x;
+  if (x < 0 || y < 0 || x >= Math.sqrt(squares.length) || y >= Math.sqrt(squares.length)) { return null }
+  return y * Math.sqrt(squares.length) + x;
 }
 
 // Get coordinate points from index
 function GetCoords(index) {
   return {
-    y: Math.floor(index/GRID_WIDTH),
-    x: index % GRID_WIDTH
+    y: Math.floor(index/Math.sqrt(squares.length)),
+    x: index % Math.sqrt(squares.length)
   }
 }
 
@@ -238,8 +256,8 @@ function GetCoords(index) {
 function SetDisplayVariables() {
   const root = document.querySelector(":root");
 
-  root.style.setProperty("--grid-width", GRID_WIDTH);
-  root.style.setProperty("--grid-height", GRID_HEIGHT);
+  root.style.setProperty("--grid-width", Math.sqrt(squares.length));
+  root.style.setProperty("--grid-height", Math.sqrt(squares.length));
 }
 
 export default App;
